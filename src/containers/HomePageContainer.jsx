@@ -24,86 +24,110 @@ function HomePageContainer({ isSignedIn }) {
 
   
   const scheduleData = {
-    "1":[
+    "main":{
+      "1":[
+        {
+          id: 1,
+          status: 1
+        },
+        {
+          id: 2,
+          status: 0
+        }
+      ],
+      "2":[
+        {
+          id: 3,
+          status: -1
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+      "3":[
+        {
+          id: 3,
+          status: 0
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+      "4":[
+        {
+          id: 3,
+          status: 0
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+      "5":[
+        {
+          id: 3,
+          status: 0
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+      "6":[
+        {
+          id: 3,
+          status: 0
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+      "7":[
+        {
+          id: 3,
+          status: 0
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+      "8":[
+        {
+          id: 3,
+          status: 0
+        },
+        {
+          id: 4,
+          status: 0
+        }
+      ],
+    },
+    "pre": [
       {
-        id: 1,
+        id: 3,
         status: 1
       },
       {
-        id: 2,
-        status: 0
-      }
-    ],
-    "2":[
-      {
-        id: 3,
+        id: 4,
         status: -1
       },
       {
-        id: 4,
-        status: 0
-      }
-    ],
-    "3":[
-      {
-        id: 3,
-        status: 0
+        id: 5,
+        status: -1
       },
       {
-        id: 4,
-        status: 0
-      }
-    ],
-    "4":[
-      {
-        id: 3,
-        status: 0
+        id: 6,
+        status: -1
       },
       {
-        id: 4,
-        status: 0
+        id: 7,
+        status: -1
       }
-    ],
-    "5":[
-      {
-        id: 3,
-        status: 0
-      },
-      {
-        id: 4,
-        status: 0
-      }
-    ],
-    "6":[
-      {
-        id: 3,
-        status: 0
-      },
-      {
-        id: 4,
-        status: 0
-      }
-    ],
-    "7":[
-      {
-        id: 3,
-        status: 0
-      },
-      {
-        id: 4,
-        status: 0
-      }
-    ],
-    "8":[
-      {
-        id: 3,
-        status: 0
-      },
-      {
-        id: 4,
-        status: 0
-      }
-    ],
+    ]
   }
   const memberDateData = [
     {
@@ -176,10 +200,9 @@ function HomePageContainer({ isSignedIn }) {
           <Flex my="2" w="100%" alignItems="center">
             <Button mr="2" leftIcon={<FaRegClock/>} size="sm" variant="outline">歷史紀錄</Button>
             <Button mr="2" leftIcon={<FaRegCalendar/>} size="sm" variant="outline">未來預期衛兵</Button>
-            <Button leftIcon={<FaInfoCircle/>} size="sm" variant="outline">規則</Button>
           </Flex>
           {/* guard panel section start*/}
-          <ScheduleTable schedule={scheduleData} />
+          <ScheduleTable schedule={scheduleData} isSignedIn={isSignedIn}/>
           {/* guard panel section end */}
         </Flex>
         <Flex w="100%" mt="8" flexDirection="column" justifyContent="start" alignItems="start">

@@ -15,13 +15,13 @@ import { statusColorMap, statusIconMap } from "../constants/mapping";
 import { getFilledMemberId } from "../utils";
 
 
-function ScheduleTable({schedule}) {
+function ScheduleTable({schedule, isSignedIn}) {
   return(
     <>
       <Flex w="100%" px="4" py="2" flexDirection="column" justifyContent="start" alignItems="start" bg="gray.100" borderRadius="lg" boxShadow="md">
         <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
-          {Object.keys(schedule).map(key => {
-            const obj = schedule[key];
+          {Object.keys(schedule["main"]).map(key => {
+            const obj = schedule["main"][key];
             return(
               <>
                 <Flex flexDirection="column" justifyContent="start" alignItems="start">
@@ -30,7 +30,7 @@ function ScheduleTable({schedule}) {
                     obj.map((slot, index) => {
                       return(
                         <>
-                          <Tag w="85px" my="1" size="lg" variant='solid' colorScheme={statusColorMap[slot.status]}>
+                          <Tag as="button" disabled={!isSignedIn} w="85px" my="1" size="lg" variant='solid' colorScheme={statusColorMap[slot.status]}>
                             <TagLeftIcon boxSize='12px' as={statusIconMap[slot.status]} />
                             <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(slot.id)}</TagLabel>
                           </Tag>
@@ -43,6 +43,25 @@ function ScheduleTable({schedule}) {
             );
           })}
         </Flex>
+          <Flex flexDirection="column" justifyContent="start" alignItems="start">
+            <Text mt="2" fontSize="lg" fontWeight="800" color="gray.600">預備更</Text>
+            <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
+
+            {
+              schedule["pre"].map(obj => {
+                return(
+                  <>
+                    <Tag as="button" disabled={!isSignedIn} w="85px" size="lg" variant='solid' colorScheme={statusColorMap[obj.status]}>
+                      <TagLeftIcon boxSize='12px' as={statusIconMap[obj.status]} />
+                      <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(obj.id)}</TagLabel>
+                    </Tag>
+                  </>
+                );
+              })
+            }
+          </Flex>
+        </Flex>
+
       </Flex>
     </>
   );
