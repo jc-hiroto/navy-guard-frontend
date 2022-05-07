@@ -7,7 +7,7 @@ import {
   IconButton,
   Spacer,
 } from "@chakra-ui/react";
-import { FaAnchor, FaSignInAlt } from "react-icons/fa";
+import { FaAnchor, FaLock, FaSignInAlt } from "react-icons/fa";
 
 function HeaderBar() {
   return(
@@ -18,7 +18,7 @@ function HeaderBar() {
           <Text fontSize="2xl" fontWeight="800" color="white">線上衛兵表</Text>
         </HStack>
         <Spacer />
-        <IconButton size="md" variant="solid" colorScheme="blue" icon={<FaSignInAlt/>}/>
+        <IconButton size="md" variant="solid" colorScheme="blue" icon={<FaLock/>}/>
       </Flex>
     </>
   );

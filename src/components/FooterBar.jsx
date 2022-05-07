@@ -2,7 +2,7 @@ import { Flex, Text, ButtonGroup, IconButton, HStack, Icon, Spacer } from '@chak
 import { FaAnchor, FaCodeBranch, FaGithub } from 'react-icons/fa';
 
 function FooterBar() {
-    const ver = "beta (20220306)"
+    const ver = "beta (20220507)"
     const handleOpenPage = (page) => {
         window.open(page, '_blank');
     };
@@ -12,7 +12,7 @@ function FooterBar() {
                 <>
                     <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center">
                       <Icon mx="2" as={FaAnchor} color="gray.500"></Icon>
-                      <Text fontSize="xs" color="gray.500" fontWeight="600">線上衛兵表系統</Text>
+                      <Text fontSize="xs" color="gray.500" fontWeight="600">線上衛兵表</Text>
                       <Spacer />
                       <HStack>
                           <Icon as={FaCodeBranch} color="gray.300" size="4"></Icon>
@@ -20,7 +20,7 @@ function FooterBar() {
                       </HStack>
                       <Spacer />
                       <ButtonGroup spacing="2">
-                          <IconButton size="sm" variant="ghost" color="gray.400" icon={<FaGithub size="20"/>} mx="1" onClick={() => handleOpenPage("https://github.com/NTUCourse-Neo")} />
+                          <IconButton size="sm" variant="ghost" color="gray.400" icon={<FaGithub size="20"/>} mx="1" onClick={() => handleOpenPage("https://github.com/jc-hiroto/navy-guard-frontend")} />
                       </ButtonGroup>
                     </Flex>
                 </>
