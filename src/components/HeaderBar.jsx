@@ -7,9 +7,9 @@ import {
   IconButton,
   Spacer,
 } from "@chakra-ui/react";
-import { FaAnchor, FaLock, FaSignInAlt } from "react-icons/fa";
+import { FaAnchor, FaCheck, FaLock, FaSignInAlt } from "react-icons/fa";
 
-function HeaderBar() {
+function HeaderBar({ setSignInModalIsOpen, isSignedIn, handleSignOut }) {
   return(
     <>
       <Flex px="6" w="100%" h="64px" bg="blue.800" justifyContent="start" alignItems="center">
@@ -18,7 +18,7 @@ function HeaderBar() {
           <Text fontSize="2xl" fontWeight="800" color="white">線上衛兵表</Text>
         </HStack>
         <Spacer />
-        <IconButton size="md" variant="solid" colorScheme="blue" icon={<FaLock/>}/>
+        <IconButton size="md" variant="solid" colorScheme={isSignedIn?"green":"red"} icon={isSignedIn? <FaCheck/>:<FaLock/>} onClick={() => isSignedIn? handleSignOut() :setSignInModalIsOpen(true)}/>
       </Flex>
     </>
   );

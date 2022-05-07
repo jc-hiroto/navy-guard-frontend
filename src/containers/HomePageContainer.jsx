@@ -8,35 +8,21 @@ import {
   Badge,
   Progress,
   Button,
-  Spacer
+  Spacer,
+  
 } from "@chakra-ui/react";
-import HeaderBar from "../components/HeaderBar";
-import FooterBar from "../components/FooterBar";
-import { FaCheckCircle, FaInfoCircle, FaPen, FaQuestionCircle, FaRegCalendar, FaRegClock, FaTimesCircle, FaUserAlt } from "react-icons/fa";
+import { FaInfoCircle, FaPen, FaRegCalendar, FaRegClock, FaUserAlt } from "react-icons/fa";
+import EditModal from "../components/EditModal";
+import ScheduleTable from "../components/ScheduleTable";
+import { ignoreTypeMap } from "../constants/mapping";
+import { getFilledMemberId, get_days_left, get_now_date } from "../utils";
 
-function HomePageContainer() {
-  const getFilledMemberId = (mid) => {
-    return ('000' + mid).substr(-3);
-  }
-  const statusColorMap = {
-    "0": "gray",
-    "1": "green",
-    "-1": "red"
-  }
-  const statusIconMap = {
-    "0": FaQuestionCircle,
-    "1": FaCheckCircle,
-    "-1": FaTimesCircle
-  }
-  const ignoreTypeMap = {
-    "exempt": "免值",
-    "diner": "餐勤",
-    "quarantine": "隔離",
-    "occation": "請假",
-    "hospitalized": "住院",
-    "discharged": "退伍",
-    "other": "其他"
-  }
+function HomePageContainer({ isSignedIn }) {
+
+  const [editModalisOpen, setEditModalisOpen] = React.useState(false);
+  const [editModalState, setEditModalState] = React.useState(0);
+
+  
   const scheduleData = {
     "1":[
       {
@@ -173,57 +159,34 @@ function HomePageContainer() {
       </>
     );
   };
+
   return (
       <Flex w="100%" px="8" py="4" minH="90vh" flexDirection="column" justifyContent="start" alignItems="center">
+        <EditModal title="編輯" mode={editModalState} isOpen={editModalisOpen} setIsOpen={setEditModalisOpen} />
         <Flex w="100%" flexDirection="column" justifyContent="start" alignItems="start">
-          <Text fontSize="3xl" fontWeight="800" color="gray.600">2022 年 5 月 7 日</Text>
-          <Text fontSize="md" fontWeight="500" color="gray.400">距離退伍還有  天</Text>
+          <Text fontSize="3xl" fontWeight="800" color="gray.600">{get_now_date()[0]} 年 {get_now_date()[1]} 月 {get_now_date()[2]} 日</Text>
+          <Text fontSize="md" fontWeight="500" color="gray.400">距離退伍還有 {get_days_left()} 天，已完成 {Math.floor((112-get_days_left())/112*100)} %</Text>
         </Flex>
         <Flex w="100%" mt="8" flexDirection="column" justifyContent="start" alignItems="start">
           <Flex w="100%" alignItems="center">
             <Text fontSize="4xl" fontWeight="800" color="gray.600">本日衛兵</Text>
             <Spacer/>
-            <Button leftIcon={<FaPen/>} size="sm" disabled>編輯</Button>
+            <Button leftIcon={<FaPen/>} size="sm" disabled={!isSignedIn} onClick={() => {setEditModalisOpen(true); setEditModalState(1);}}>編輯</Button>
           </Flex>
           <Flex my="2" w="100%" alignItems="center">
             <Button mr="2" leftIcon={<FaRegClock/>} size="sm" variant="outline">歷史紀錄</Button>
-            <Button mr="2" leftIcon={<FaRegCalendar/>} size="sm" variant="outline">本週預期衛兵</Button>
+            <Button mr="2" leftIcon={<FaRegCalendar/>} size="sm" variant="outline">未來預期衛兵</Button>
             <Button leftIcon={<FaInfoCircle/>} size="sm" variant="outline">規則</Button>
           </Flex>
-          {/* guard panel section */}
-          <Flex w="100%" px="4" py="2" flexDirection="column" justifyContent="start" alignItems="start" bg="gray.100" borderRadius="lg" boxShadow="md">
-            <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
-              {Object.keys(scheduleData).map(key => {
-                const obj = scheduleData[key];
-                return(
-                  <>
-                    <Flex flexDirection="column" justifyContent="start" alignItems="start">
-                      <Text mt="2" fontSize="lg" fontWeight="800" color="gray.600">第 {key} 更</Text>
-                      {
-                        obj.map((slot, index) => {
-                          return(
-                            <>
-                              <Tag w="85px" my="1" size="lg" variant='solid' colorScheme={statusColorMap[slot.status]}>
-                                <TagLeftIcon boxSize='12px' as={statusIconMap[slot.status]} />
-                                <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(slot.id)}</TagLabel>
-                              </Tag>
-                            </>
-                          );
-                        })
-                      }  
-                    </Flex>
-                  </>
-                );
-                
-              })}
-            </Flex>
-          </Flex>
+          {/* guard panel section start*/}
+          <ScheduleTable schedule={scheduleData} />
+          {/* guard panel section end */}
         </Flex>
         <Flex w="100%" mt="8" flexDirection="column" justifyContent="start" alignItems="start">
           <Flex w="100%" alignItems="center">
             <Text fontSize="4xl" fontWeight="800" color="gray.600">補值更表</Text>
             <Spacer/>
-            <Button leftIcon={<FaPen/>} size="sm" disabled>編輯</Button>
+            <Button leftIcon={<FaPen/>} size="sm" disabled={!isSignedIn} onClick={() => {setEditModalisOpen(true); setEditModalState(2);}}>編輯</Button>
           </Flex>
           <Flex w="100%" px="4" py="2" flexDirection="column" justifyContent="start" alignItems="start" bg="gray.100" borderRadius="lg" boxShadow="md">
             {memberDateData.map(member => {
@@ -239,7 +202,7 @@ function HomePageContainer() {
           <Flex w="100%" alignItems="center">
             <Text fontSize="4xl" fontWeight="800" color="gray.600">免值更名單</Text>
             <Spacer/>
-            <Button leftIcon={<FaPen/>} size="sm" disabled>編輯</Button>
+            <Button leftIcon={<FaPen/>} size="sm" disabled={!isSignedIn} onClick={() => {setEditModalisOpen(true); setEditModalState(3);}}>編輯</Button>
           </Flex>
           <Flex w="100%" px="4" py="2" flexDirection="column" justifyContent="start" alignItems="start" bg="gray.100" borderRadius="lg" boxShadow="md">
             {Object.keys(ignoreMemberData).map(key => {

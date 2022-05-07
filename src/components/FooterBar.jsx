@@ -7,7 +7,7 @@ function FooterBar() {
         window.open(page, '_blank');
     };
     return (
-        <Flex w="100%" flexDirection="row" flexWrap="wrap" justifyContent="center" alignItems="start" px="4" py="2" borderTop="1px solid" borderColor="gray.200" zIndex="9999" css={{gap: "10px"}}>
+        <Flex w="100%" flexDirection="row" flexWrap="wrap" justifyContent="center" alignItems="start" px="4" py="2" borderTop="1px solid" borderColor="gray.200" css={{gap: "10px"}}>
             {
                 <>
                     <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center">
