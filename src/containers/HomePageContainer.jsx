@@ -15,7 +15,7 @@ import { FaInfoCircle, FaPen, FaRegCalendar, FaRegClock, FaUserAlt } from "react
 import EditModal from "../components/EditModal";
 import { ignoreTypeMap, statusColorMap, statusIconMap } from "../constants/mapping";
 import { getFilledMemberId, get_days_left, get_now_date } from "../utils";
-import { get_schedule_by_date } from "../api/schedules";
+import { get_day_prediction, get_schedule_by_date } from "../api/schedules";
 import { getLeftQueues } from "../api/queues";
 import { getIgnoreMembers } from "../api/members";
 
@@ -27,14 +27,23 @@ function HomePageContainer({ isSignedIn }) {
   const [queueData, setQueueData] = React.useState({});
   const [ignoreData, setIgnoreData] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(true);
+  const [scheduleIsVerified, setScheduleIsVerified] = React.useState(false);
 
 
   const fetchScheduleData = async () => {
     try{
-      const sche = await get_schedule_by_date("2022-05-06");
+      const sche = await get_schedule_by_date(new Date().toISOString().split('T')[0]);
       if (sche && sche.schedule) {
         console.log("schedule: ", sche.schedule);
         setScheduleData(sche.schedule);
+        setScheduleIsVerified(true);
+      }else{
+        console.log("schedule is not verified");
+        setScheduleIsVerified(false);
+        const p_sche = await get_day_prediction();
+        if (p_sche && p_sche.schedule) {
+          setScheduleData(p_sche.schedule);
+        }
       }
     }catch(e){
       console.log(e);
@@ -43,9 +52,25 @@ function HomePageContainer({ isSignedIn }) {
 
   const fetchQueueData = async () => {
     try{
-
+      const q = await getLeftQueues();
+        if (q && q.members) {
+          console.log("queue: ", q.members);
+          setQueueData(q.members);
+        }
     }catch(e){
-      
+      console.log(e);
+    }
+  }
+
+  const fetchIgnoreData = async () => {
+    try{
+      const ig = await getIgnoreMembers();
+      if (ig && ig.members) {
+        console.log("ignore: ", ig.members);
+        setIgnoreData(ig.members);
+      }
+    }catch(e){
+      console.log(e);
     }
   }
 
@@ -54,20 +79,8 @@ function HomePageContainer({ isSignedIn }) {
       console.log("fetching data...");
       setIsLoading(true);
       await fetchScheduleData();
-      try{
-        const q = await getLeftQueues();
-        if (q && q.members) {
-          console.log("queue: ", q.members);
-          setQueueData(q.members);
-        }
-        const ig = await getIgnoreMembers();
-        if (ig && ig.members) {
-          console.log("ignore: ", ig.members);
-          setIgnoreData(ig.members);
-        }
-      }catch(e){
-        console.log(e);
-      }
+      await fetchQueueData();
+      await fetchIgnoreData();
       setIsLoading(false);
       console.log("fetching data done");
     }
@@ -116,10 +129,18 @@ function HomePageContainer({ isSignedIn }) {
                     {
                       obj.map((slot, index) => {
                         return(
+                          scheduleIsVerified?
                           <>
                             <Tag as="button" disabled={!isSignedIn} w="85px" my="1" size="lg" variant='solid' colorScheme={statusColorMap[slot.status]}>
                               <TagLeftIcon boxSize='12px' as={statusIconMap[slot.status]} />
                               <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(slot.id)}</TagLabel>
+                            </Tag>
+                          </>
+                          :
+                          <>
+                            <Tag w="85px" my="1" size="lg" variant='solid' colorScheme="gray">
+                              <TagLeftIcon boxSize='12px' as={statusIconMap["0"]} />
+                              <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(slot)}</TagLabel>
                             </Tag>
                           </>
                         );
@@ -130,24 +151,35 @@ function HomePageContainer({ isSignedIn }) {
               );
             })}
           </Flex>
+          {
             <Flex flexDirection="column" justifyContent="start" alignItems="start">
               <Text mt="2" fontSize="lg" fontWeight="800" color="gray.600">預備更</Text>
-              <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
-  
-              {
-                scheduleData["pre"].map(obj => {
-                  return(
-                    <>
-                      <Tag as="button" disabled={!isSignedIn} w="85px" size="lg" variant='solid' colorScheme={statusColorMap[obj.status]}>
-                        <TagLeftIcon boxSize='12px' as={statusIconMap[obj.status]} />
-                        <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(obj.id)}</TagLabel>
-                      </Tag>
-                    </>
-                  );
-                })
-              }
+                <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
+    
+                {
+                  scheduleData["pre"].map(obj => {
+                    return(
+                      scheduleIsVerified?
+                      <>
+                        <Tag as="button" disabled={!isSignedIn} w="85px" size="lg" variant='solid' colorScheme="gray">
+                          <TagLeftIcon boxSize='12px' as={statusIconMap["0"]} />
+                          <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(obj.id)}</TagLabel>
+                        </Tag>
+                      </>
+                      :
+                      <>
+                        <Tag as="button" disabled={!isSignedIn} w="85px" size="lg" variant='solid' colorScheme="gray">
+                          <TagLeftIcon boxSize='12px' as={statusIconMap["0"]} />
+                          <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(obj)}</TagLabel>
+                        </Tag>
+                      </>
+                      
+                    );
+                  })
+                }
+              </Flex>
             </Flex>
-          </Flex>
+          }
   
         </Flex>
       </>
@@ -213,7 +245,7 @@ function HomePageContainer({ isSignedIn }) {
 
   return (
       <Flex w="100%" px="8" py="4" minH="90vh" flexDirection="column" justifyContent="start" alignItems="center">
-        <EditModal title="編輯" mode={editModalState} isOpen={editModalisOpen} setIsOpen={setEditModalisOpen} />
+        <EditModal title="編輯" mode={editModalState} isOpen={editModalisOpen} setIsOpen={setEditModalisOpen} ignoreData={ignoreData}/>
         <Flex w="100%" flexDirection="column" justifyContent="start" alignItems="start">
           <Text fontSize="3xl" fontWeight="800" color="gray.600">{get_now_date()[0]} 年 {get_now_date()[1]} 月 {get_now_date()[2]} 日</Text>
           <Text fontSize="md" fontWeight="500" color="gray.400">距離退伍還有 {get_days_left()} 天，已完成 {Math.floor((112-get_days_left())/112*100)} %</Text>
@@ -225,7 +257,7 @@ function HomePageContainer({ isSignedIn }) {
             <Button leftIcon={<FaPen/>} size="sm" disabled={!isSignedIn} onClick={() => {setEditModalisOpen(true); setEditModalState(1);}}>編輯</Button>
           </Flex>
           <Flex my="2" w="100%" alignItems="center">
-            <Button mr="2" leftIcon={<FaRegClock/>} size="sm" variant="outline">歷史紀錄</Button>
+            <Button mr="2" leftIcon={<FaRegClock/>} size="sm" variant="outline" disabled>歷史紀錄</Button>
             <Button mr="2" leftIcon={<FaRegCalendar/>} size="sm" variant="outline">未來預期衛兵</Button>
           </Flex>
           {/* guard panel section start*/}

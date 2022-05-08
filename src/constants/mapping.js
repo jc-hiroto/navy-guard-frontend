@@ -1,7 +1,7 @@
 import { FaCheckCircle, FaQuestionCircle, FaTimesCircle } from "react-icons/fa";
 
 const statusColorMap = {
-  "0": "gray",
+  "0": "blue",
   "1": "green",
   "-1": "red"
 }

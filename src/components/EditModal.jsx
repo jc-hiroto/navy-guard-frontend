@@ -12,14 +12,22 @@ import {
   Button,
   Text,
   Spacer,
-  HStack
+  HStack,
+  Tag,
+  TagLabel,
+  TagLeftIcon,
+  Badge,
+
 } from "@chakra-ui/react";
+import { getFilledMemberId } from '../utils';
 import { getMemberbyId, getMemberQueuebyId, patchMemberbyId } from '../api/members';
-import { ignoreTypeMap } from '../constants/mapping';
+import { ignoreTypeMap, statusColorMap, statusIconMap } from '../constants/mapping';
 import { createQueue, deleteQueuebyId } from '../api/queues';
+import { createSchedule, get_day_prediction } from '../api/schedules';
+import { FaUserAlt } from 'react-icons/fa';
 
 const token = sessionStorage.getItem('NAVY_GUARD_USER_TOKEN');
-const scheduleData = {
+const schedule = {
   "1":[
     {
       id: 1,
@@ -102,15 +110,36 @@ const scheduleData = {
   ],
 }
 
-function EditModal({ title, mode, isOpen, setIsOpen}) {
+function EditModal({ title, mode, isOpen, setIsOpen, ignoreData}) {
   const [ignoreDate, setIgnoreDate] = React.useState('');
   const [memberQueues, setMemberQueues] = React.useState([]);
+  const [schedule, setSchedule] = React.useState({});
+  const [verifiedSchedule, setVerifiedSchedule] = React.useState({});
+  const [verifiedPre, setVerifiedPre] = React.useState([]);
 
+  const [isLoading, setIsLoading] = React.useState(false);
   const [isSending, setIsSending] = React.useState(false);
   const [errorCode, setErrorCode] = React.useState('');
   const [memberId, setMemberId] = React.useState('');
   const [memberData, setMemberData] = React.useState(null);
   const [selectedType, setSelectedType] = React.useState('');
+
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      console.log("get prediction");
+      const p_sche = await get_day_prediction()
+      if (p_sche && p_sche.schedule) {
+        console.log(p_sche);
+        setSchedule(p_sche.schedule);
+        setVerifiedSchedule({"_id": p_sche.schedule._id, "main":{"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": []}, "pre": []})
+      }
+      setIsLoading(false);
+    }
+    fetchData();
+  } , []);
+
   useEffect(() => {
     console.log(memberId);
     async function fetchData() {
@@ -198,13 +227,162 @@ function EditModal({ title, mode, isOpen, setIsOpen}) {
     setMemberId('');
     setErrorCode('');
   }
+
+  const renderIgnoreMemberPanel = () => {
+    return(
+      <Flex w="100%" px="4" py="2" flexDirection="column" justifyContent="start" alignItems="start" bg="gray.100" borderRadius="lg" boxShadow="md">
+        {Object.keys(ignoreData).map(key => {
+          return(
+            <>
+              <Flex w="100%" my="1" flexDirection="row" justifyContent="start" alignItems="center">
+                <Tag w="80px" mr="2" size="lg" variant='outline' colorScheme='gray'>
+                  <TagLeftIcon boxSize='12px' as={FaUserAlt} />
+                  <TagLabel fontWeight="800">{ignoreTypeMap[key]}</TagLabel>
+                </Tag>
+                <Flex w="70%" flexDirection="row" justifyContent="start" alignItems="start" overflow="scroll">
+                  {
+                    ignoreData[key].map((mid, index) => {
+                      return(
+                        <Badge mx="0.5" key={index} colorScheme="green" size="lg">{getFilledMemberId(mid)}</Badge>
+                      )
+                    })
+                  }
+                </Flex>
+              </Flex>
+            </>
+          );
+        })}
+      </Flex>
+    );
+  };
+
+  const renderSchedule = () => {
+    const handleVerify = (type, time, mid) => {
+      const s = {...verifiedSchedule};
+      if (s[type][time].includes(mid)){
+        s[type][time] = s[type][time].filter(m => m !== mid);
+      }else{
+        s[type][time].push(mid);
+      }
+      setVerifiedSchedule(s);
+    };
+    const handleVerifyPre = (mid) => {
+      if (verifiedPre.includes(mid)){
+        setVerifiedPre(verifiedPre.filter(m => m !== mid));
+      }else{
+        setVerifiedPre([...verifiedPre, mid]);
+      }
+    };
+
+    const isVerified = (mid) => {
+      const s = {...verifiedSchedule};
+      for (let key in s.main) {
+        if (s.main[key].includes(mid)){
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    const isVerifiedPre = (mid) => {
+      return verifiedPre.includes(mid);
+    };
+
+    if(isLoading){
+      return(
+        <Flex w="100%" h="100%" justifyContent="center" alignItems="center">
+          <Text fontSize="2xl" fontWeight="800">Loading...</Text>
+        </Flex>
+      );
+    }
+    return(
+      <>
+        <Flex w="100%" px="4" py="2" flexDirection="column" justifyContent="start" alignItems="start" bg="gray.100" borderRadius="lg" boxShadow="md">
+          <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
+            {Object.keys(schedule["main"]).map(key => {
+              const obj = schedule["main"][key];
+              return(
+                <>
+                  <Flex flexDirection="column" justifyContent="start" alignItems="start">
+                    <Text mt="2" fontSize="lg" fontWeight="800" color="gray.600">第 {key} 更</Text>
+                    {
+                      obj.map((slot, index) => {
+                        return(
+                          <>
+                            <Tag as="button" w="85px" my="1" size="lg" variant='solid' colorScheme={isVerified(slot) ? "green":"gray"} onClick={() => handleVerify("main", key, slot)}>
+                              <TagLeftIcon boxSize='12px' as={isVerified(slot) ? statusIconMap["1"]:statusIconMap["0"]} />
+                              <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(slot)}</TagLabel>
+                            </Tag>
+                          </>
+                        );
+                      })
+                    }  
+                  </Flex>
+                </>
+              );
+            })}
+          </Flex>
+          {
+              <Flex flexDirection="column" justifyContent="start" alignItems="start">
+                <Text mt="2" fontSize="lg" fontWeight="800" color="gray.600">預備更</Text>
+                  <Flex w="100%" flexDirection="row" justifyContent="start" alignItems="center" flexWrap="wrap" css={{gap: "10px"}}>
+      
+                  {
+                    schedule["pre"].map(obj => {
+                      return(
+                        <>
+                          <Tag as="button" w="85px" size="lg" variant='solid' colorScheme={isVerifiedPre(obj) ? "green":"gray"} onClick={() => handleVerifyPre(obj)}>
+                            <TagLeftIcon boxSize='12px' as={isVerifiedPre(obj) ? statusIconMap["1"]:statusIconMap["0"]} />
+                            <TagLabel fontWeight="800" fontSize="lg">{getFilledMemberId(obj)}</TagLabel>
+                          </Tag>
+                        </>
+                        
+                      );
+                    })
+                  }
+                </Flex>
+              </Flex>
+          }
+        </Flex>
+      </>
+    );
+  }
+
+  const handleSubmitSchedule = async () => {
+    let data = {"_id": verifiedSchedule._id, "main":{"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": []}, "pre": []};
+    for (let key in verifiedSchedule["main"]) {
+      for (let id of verifiedSchedule["main"][key]) {
+        data["main"][key].push({"id": id, "status": 0});
+      }
+    }
+    for (let id of verifiedPre) {
+      data["pre"].push({"id": id, "status": 0});
+    }
+    console.log(data);
+    const resp = await createSchedule(data, token);
+  }
+
+  const renderEditScheduleBody = () => {
+    return(
+      <>
+        <ModalBody>
+          {renderSchedule()}
+          <Flex my="2"></Flex>
+          <Text fontSize="2xl" fontWeight="800" color="gray.600">免值更名單</Text>
+          {renderIgnoreMemberPanel()}
+        </ModalBody>
+        <ModalFooter>
+          <Button colorScheme="blue" variant="solid" onClick={() => handleSubmitSchedule()}>確認</Button>
+        </ModalFooter>
+      </>
+    );
+  }
   const renderEditModalBody = () => {
-    console.log(mode);
     switch(mode) {
       case 1:
         return(
           <>
-          1
+            {renderEditScheduleBody()}
           </>
         );
       case 2:
