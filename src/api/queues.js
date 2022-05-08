@@ -1,5 +1,10 @@
 import instance from "./axios";
 
+const getLeftQueues = async () => {
+  const response = await instance.get("/queues");
+  return response.data;
+};
+
 const getQueuebyId = async (queue_id) => {
   const response = await instance.get(`/queues/${queue_id}`);
   return response.data;
@@ -23,4 +28,4 @@ const deleteQueuebyId = async (queue_id, token) => {
   return response.data;
 }
 
-export { getQueuebyId, createQueue, deleteQueuebyId };
+export { getLeftQueues, getQueuebyId, createQueue, deleteQueuebyId };
